@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.version     = Vault::Rails::VERSION
   s.authors     = ["Jordan MacDonald"]
   s.email       = ["jordan.macdonald@greatersudbury.ca"]
-  s.homepage    = ""
+  s.homepage    = 'https://github.com/cityofgreatersudbury/vault-rails'
   s.summary     = 'CoffeeScript collection class for offline use.'
   s.description = 'Store and manage collections of objects without a connection.'
 
