@@ -207,7 +207,7 @@ class Vault
         $.ajax
           type: 'DELETE'
           url: @urls.delete
-          data: @strip object
+          data: JSON.stringify @strip object
           fixture: (settings) ->
             return true
           success: (data) =>
@@ -228,7 +228,7 @@ class Vault
         $.ajax
           type: 'POST'
           url: @urls.create
-          data: @strip object
+          data: JSON.stringify @strip object
           fixture: (settings) =>
             settings.data.id = @date.getTime()
 
@@ -249,7 +249,7 @@ class Vault
         $.ajax
           type: 'POST'
           url: @urls.update
-          data: @strip object
+          data: JSON.stringify @strip object
           fixture: (settings) ->
             return true
           success: (data) =>
