@@ -1,5 +1,5 @@
 class Vault
-  constructor: (name, urls, options = {}) ->
+  constructor: (@name, @urls, options = {}) ->
     # Setup some internal variables.
     @objects = []
     @dirty_object_count = 0
@@ -12,10 +12,6 @@ class Vault
     # Create a date object which will be used to
     # generate unique IDs for new records.
     @date = new Date
-
-    # Import required parameters for the data store.
-    @name = name
-    @urls = urls
 
     # Declare default options.
     @options =
@@ -202,12 +198,16 @@ class Vault
     # Find the object using the specified id.
     object = @find(id)
 
+    # Package up the object to be sent to the server.
+    packaged_object = {}
+    packaged_object[@name] = JSON.stringify @strip object
+
     switch object.status
       when "deleted"
         $.ajax
           type: 'DELETE'
           url: @urls.delete
-          data: JSON.stringify @strip object
+          data: packaged_object
           fixture: (settings) ->
             return true
           success: (data) =>
@@ -228,7 +228,7 @@ class Vault
         $.ajax
           type: 'POST'
           url: @urls.create
-          data: JSON.stringify @strip object
+          data: packaged_object
           fixture: (settings) =>
             settings.data.id = @date.getTime()
 
@@ -249,7 +249,7 @@ class Vault
         $.ajax
           type: 'POST'
           url: @urls.update
-          data: JSON.stringify @strip object
+          data: packaged_object
           fixture: (settings) ->
             return true
           success: (data) =>
