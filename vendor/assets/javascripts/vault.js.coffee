@@ -179,6 +179,33 @@ class Vault
     # Object not found.
     return false
 
+  # Forcibly remove an object from the collection.
+  destroy: (id) ->
+    # Don't bother if the vault is locked.
+    if @locked
+      @errors.push 'Cannot delete, vault is locked.'
+      return false
+
+    for object, index in @objects
+      if object[@options.id_attribute] == id
+        # Remove the object from the collection.
+        @objects.splice(index, 1)
+
+        # Reduce the dirty count if this object
+        # was dirty, since we're no longer managing it.
+        switch object.status
+          when "new", "dirty"
+            @dirty_object_count--
+
+        # Store the collection.
+        @store
+
+        # Destroy was successful.
+        return true
+
+    # Object not found.
+    return false
+
   # Write an object back to the server.
   save: (id, after_save = ->) ->
     # Don't bother if the vault is locked, we're offline or there's nothing to sync.
@@ -357,6 +384,8 @@ class Vault
       @update(attributes, object.id)
     object.delete = =>
       @delete(object.id)
+    object.destroy = =>
+      @destroy(object.id)
     object.save = (after_save) =>
       @save(object.id, after_save)
     
@@ -481,9 +510,11 @@ class Vault
     if object_clone.status is "new"
       delete object_clone[@options.id_attribute]
     
+    # Remove vault object methods.
     delete object_clone.status
     delete object_clone.update
     delete object_clone.delete
+    delete object_clone.destroy
     delete object_clone.save
     
     # Iterate through all of the sub-collections, and if present
