@@ -67,7 +67,7 @@ class Vault
           'find': (id) =>
             for object in @objects
               for sub_object in object[sub_collection]
-                if sub_object[@options.id_attribute] is parseInt(id)
+                if sub_object[@options.id_attribute].toString() is id.toString()
                   return sub_object
               
             # Object with specified id couldn't be found.
@@ -109,7 +109,7 @@ class Vault
   # Find an object in the collection using its id.
   find: (id) ->
     for object in @objects
-      if object[@options.id_attribute] == parseInt(id)
+      if object[@options.id_attribute].toString() is id.toString()
         return object
 
     # Object with specified id couldn't be found.
@@ -268,7 +268,7 @@ class Vault
 
             # Update the object with the attributes sent from the server.
             object.update data, object.id
-            
+
             object.status = "clean"
             @dirty_object_count--
           error: =>
@@ -404,7 +404,7 @@ class Vault
           # Find functionality.
           object[sub_collection].find = (id) =>
             for sub_collection_object in object[sub_collection]
-              if sub_collection_object[@options.id_attribute] is parseInt(id)
+              if sub_collection_object[@options.id_attribute].toString() is id.toString()
                 return sub_collection_object
               
             # Object with specified id couldn't be found.
