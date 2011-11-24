@@ -38,10 +38,6 @@ class Vault
         if @load()
           if @dirty_object_count > 0
             # Offline data loaded and modifications found; keep existing data.
-
-            # Extend the loaded objects with vault-specific variables and functions.
-            for object in @objects
-              @extend object
             
             # Detach the callback to after_load so that the call to the
             # vault constructor can complete/return, allowing any post-load code
@@ -363,9 +359,13 @@ class Vault
     if localStorage.getItem(@name)
       @objects = $.parseJSON(localStorage.getItem @name)
 
+      # Extend the loaded objects with vault-specific variables and functions.
+      for object in @objects
+        @extend object
+
       # Calculate the number of dirty objects.
       for object in @objects
-        unless object.status == "clean"
+        unless object.status is "clean"
           @dirty_object_count++
       
       return true
@@ -383,10 +383,12 @@ class Vault
     return true
 
   # Extend an object with vault-specific variables and functions.
-  extend: (object, status="clean") ->
+  extend: (object, status) ->
+    # Validate the status argument.
+    if status?
+      throw "Invalid status specified: cannot extend object." unless status in ['clean', 'dirty', 'new']
     
     # Add simple variables and methods.
-    object.status = status
     object.update = (attributes) =>
       @update(attributes, object.id)
     object.delete = =>
@@ -395,6 +397,13 @@ class Vault
       @destroy(object.id)
     object.save = (after_save) =>
       @save(object.id, after_save)
+    
+    if status?
+      # Status has been explicitly defined; force it on the object.
+      object.status = status
+    else
+      # Default the object's status to clean if it doesn't exist.
+      object.status = "clean" unless object.status?
     
     # Iterate through all of the sub-collections, and if present
     # extend them with some basic functionality.
