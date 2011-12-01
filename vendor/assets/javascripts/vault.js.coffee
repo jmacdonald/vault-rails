@@ -45,16 +45,29 @@ class Vault
             window.setTimeout @options.after_load, 100
           else
             # No modifications in offline data; reload fresh data.
-            @reload(@options.after_load)
+            if @urls.list?
+              @reload(@options.after_load)
+            else
+              # Can't reload without a list url; use the offline data.
+              @options.after_load()
         else
           if navigator.onLine
             # Load failed, but we're connected; reload fresh data.
-            @reload(@options.after_load)
+            if @urls.list?
+              @reload(@options.after_load)
+            else
+              # Can't reload without a list url; use an empty dataset.
+              @options.after_load()
           else
             # Load failed and we're offline; log an error.
             @errors.push "Offline data failed to load. Could not load live data as browser is offline."
       else
-        @reload(@options.after_load)
+        # Not using offline data; reload fresh data.
+        if @urls.list?
+          @reload(@options.after_load)
+        else
+          # Can't reload without a list url; use an empty dataset.
+          @options.after_load()
     
     # Create convenience attributes for sub-collections.
     for sub_collection in @options.sub_collections
@@ -302,6 +315,9 @@ class Vault
       return after_load()
     else if not navigator.onLine
       @errors.push 'Cannot reload, navigator is offline.'
+      return after_load()
+    else if not @urls.list?
+      @errors.push 'Cannot reload, list url is not configured.'
       return after_load()
 
     # Lock the vault until the reload is complete.
