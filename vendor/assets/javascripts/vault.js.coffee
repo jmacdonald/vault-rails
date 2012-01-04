@@ -12,10 +12,6 @@ class Vault
     # This property is used to temporarily lock the vault during mutation methods.
     @locked = false
 
-    # Create a date object which will be used to
-    # generate unique IDs for new records.
-    @date = new Date
-
     # Declare default options.
     @options =
       autoload: true
@@ -23,6 +19,10 @@ class Vault
       id_attribute: "id"
       offline: false
       sub_collections: []
+    
+    # Declare an array used to track ids that are in use,
+    # so as to prevent duplicates when generating new ones.
+    @ids_in_use = []
 
     # Merge default options with user-defined ones.
     for option, value of options
@@ -128,7 +128,7 @@ class Vault
 
     # If the object has no id, generate a temporary one and add it to the object.
     unless object[@options.id_attribute]? and object[@options.id_attribute] isnt ''
-      object[@options.id_attribute] = @date.getTime()
+      object[@options.id_attribute] = @generate_id()
 
     # Extend the object with vault-specific variables and functions.
     @extend object,"new"
@@ -477,7 +477,7 @@ class Vault
 
             # If the sub-object has no id, generate a temporary one and add it to the sub-object.
             unless sub_object[@options.id_attribute]? and sub_object[@options.id_attribute] isnt ''
-              sub_object[@options.id_attribute] = @date.getTime()
+              sub_object[@options.id_attribute] = @generate_id()
             
             # Add a delete method to the sub-object.
             sub_object.delete = =>
@@ -609,6 +609,21 @@ class Vault
       new_instance[key] = @clone object[key]
 
     return new_instance
+  
+  # Generate a new unique (within the set of generated ids) id.
+  generate_id: ->
+    until id_is_available
+      # Generate a new id and assume it's available.
+      id = new Date().getTime()
+      id_is_available = true
+
+      # Flag the new id as unavailable if it's taken.
+      id_is_available = false for taken in @ids_in_use when id is taken
+    
+    # Store the new id so that it's not used again.
+    @ids_in_use.push id
+
+    return id
 
   # Attach the Vault class to the window so that it can be used by other scripts.
   window.Vault = this
