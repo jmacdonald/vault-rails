@@ -1,6 +1,5 @@
 module Vault
-  module Rails
-    class Engine < ::Rails::Engine
-    end
+  module Rails    
+    require 'vault/rails/engine' if defined?(Rails)   
   end
 end

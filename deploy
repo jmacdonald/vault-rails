@@ -1,0 +1,3 @@
+cp ../../js/vault/vault.coffee vendor/assets/javascripts/vault.js.coffee
+vi lib/vault/rails/version.rb
+gem build vault-rails.gemspec
